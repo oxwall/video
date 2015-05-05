@@ -219,7 +219,7 @@ class VIDEO_CLASS_EventHandler
                 $format = $data["content"]["format"];
             }
         }
-
+        
         $content = array(
             "format" => $format,
             "vars" => array_merge(array(
@@ -474,11 +474,21 @@ class VIDEO_CLASS_EventHandler
                 }
 
                 // Newsfeed
+                $content = array(
+                    "vars" => array()
+                );
+                
+                $content["vars"]["status"] = empty($params["status"]) 
+                        ? null
+                        : $params["status"];
+                
                 $event = new OW_Event('feed.action', array(
                     'pluginKey' => 'video',
                     'entityType' => VIDEO_BOL_ClipService::ENTITY_TYPE,
                     'entityId' => $clip->id,
                     'userId' => $clip->userId
+                ), array(
+                    "content" => $content
                 ));
 
                 OW::getEventManager()->trigger($event);
@@ -520,7 +530,8 @@ class VIDEO_CLASS_EventHandler
             'userId' => $params['userId'],
             'title' => isset($data['title']) ? $data['title'] : $params['status'],
             'description' => isset($data['description']) ? $data['description'] : null,
-            'code' => UTIL_HtmlTag::stripJs($data['html'])
+            'code' => UTIL_HtmlTag::stripJs($data['html']),
+            "status" => $params["status"]
         );
 
         $event = new OW_Event(self::EVENT_VIDEO_ADD, $addClipParams);
