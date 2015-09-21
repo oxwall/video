@@ -87,7 +87,7 @@ class VIDEO_CLASS_ContentProvider
                 $info["image"]["thumbnail"] = $this->service->getClipDefaultThumbUrl();
             }
             
-            $info["status"] = $entity->status == "approved" 
+            $info["status"] = $entity->status == VIDEO_BOL_ClipDao::STATUS_APPROVED
                     ? BOL_ContentService::STATUS_ACTIVE
                     : BOL_ContentService::STATUS_APPROVAL;
             
@@ -112,7 +112,7 @@ class VIDEO_CLASS_ContentProvider
         foreach ( $data as $entityId => $info )
         {
             $statusActive = $info["status"] == BOL_ContentService::STATUS_ACTIVE;
-            $status = $statusActive ? "approved" : "approval";
+            $status = $statusActive ? VIDEO_BOL_ClipDao::STATUS_APPROVED : VIDEO_BOL_ClipDao::STATUS_APPROVAL;
 
             // Set tags status
             BOL_TagService::getInstance()->setEntityStatus(VIDEO_BOL_ClipService::TAGS_ENTITY_TYPE, $entityId, $statusActive);

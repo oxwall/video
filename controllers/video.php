@@ -148,7 +148,7 @@ class VIDEO_CTRL_Video extends OW_ActionController
         // is moderator
         $modPermissions = OW::getUser()->isAuthorized('video');
         
-        if ( $clip->status != "approved" && !( $modPermissions || $ownerMode ) )
+        if ( $clip->status != VIDEO_BOL_ClipDao::STATUS_APPROVED && !( $modPermissions || $ownerMode ) )
         {
             throw new Redirect403Exception;
         }
@@ -182,12 +182,12 @@ class VIDEO_CTRL_Video extends OW_ActionController
         $cmtParams->setOwnerId($contentOwner);
         $cmtParams->setDisplayType(BASE_CommentsParams::DISPLAY_TYPE_BOTTOM_FORM_WITH_FULL_LIST);
         
-        $cmtParams->setAddComment($clip->status == "approved");
+        $cmtParams->setAddComment($clip->status == VIDEO_BOL_ClipDao::STATUS_APPROVED);
 
         $videoCmts = new BASE_CMP_Comments($cmtParams);
         $this->addComponent('comments', $videoCmts);
 
-        if ( $clip->status == "approved" )
+        if ( $clip->status == VIDEO_BOL_ClipDao::STATUS_APPROVED )
         {
             $videoRates = new BASE_CMP_Rate('video', 'video_rates', $id, $contentOwner);
             $this->addComponent('rate', $videoRates);
@@ -224,7 +224,7 @@ class VIDEO_CTRL_Video extends OW_ActionController
         OW::getDocument()->addOnloadScript($script);
 
         $pendingApprovalString = "";
-        if ( $clip->status != "approved" )
+        if ( $clip->status != VIDEO_BOL_ClipDao::STATUS_APPROVED )
         {
             $pendingApprovalString = '<span class="ow_remark ow_small">(' 
                     . OW::getLanguage()->text("base", "pending_approval") . ')</span>';
@@ -247,7 +247,7 @@ class VIDEO_CTRL_Video extends OW_ActionController
             array_push($toolbar, $toolbarItem);
         }
 
-        if ( $clip->status == "approved" && OW::getUser()->isAuthenticated() && !$ownerMode )
+        if ( $clip->status == VIDEO_BOL_ClipDao::STATUS_APPROVED && OW::getUser()->isAuthenticated() && !$ownerMode )
         {
             array_push($toolbar, array(
                 'href' => 'javascript://',
@@ -291,7 +291,7 @@ class VIDEO_CTRL_Video extends OW_ActionController
                 ));
             }
 
-            if ( $clip->status != 'approved' )
+            if ( $clip->status != VIDEO_BOL_ClipDao::STATUS_APPROVED )
             {
                 array_push($toolbar, array(
                     'href' => OW::getRouter()->urlFor(__CLASS__, "approve", array(

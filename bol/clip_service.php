@@ -426,7 +426,7 @@ final class VIDEO_BOL_ClipService
         /** @var $clip VIDEO_BOL_Clip */
         $clip = $this->clipDao->findById($id);
 
-        $newStatus = $status == 'approve' ? 'approved' : 'blocked';
+        $newStatus = $status == 'approve' ? VIDEO_BOL_ClipDao::STATUS_APPROVED : VIDEO_BOL_ClipDao::STATUS_BLOCKED;
 
         $clip->status = $newStatus;
 

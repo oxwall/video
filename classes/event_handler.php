@@ -453,7 +453,7 @@ class VIDEO_CLASS_EventHandler
 
             $clip->provider = $prov->detectProvider();
             $clip->addDatetime = time();
-            $clip->status = 'approved';
+            $clip->status = VIDEO_BOL_ClipDao::STATUS_APPROVED;
 
             $thumbUrl = $prov->getProviderThumbUrl($clip->provider);
             if ( $thumbUrl != VideoProviders::PROVIDER_UNDEFINED )
@@ -539,7 +539,7 @@ class VIDEO_CLASS_EventHandler
 
         $addClipData = $event->getData();
 
-        if ( $addClipData["status"] == "approval" )
+        if ( $addClipData["status"] == VIDEO_BOL_ClipDao::STATUS_APPROVAL )
         {
             $e->setData(array(
                 "message" => OW::getLanguage()->text("video", "pending_approval_feedback")
