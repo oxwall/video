@@ -106,33 +106,63 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
 
         $cacheLifeTime = $first == 0 ? 24 * 3600 : null;
         $cacheTags = $first == 0 ? array(self::CACHE_TAG_VIDEO_LIST) : null;
-        
+
+        $queryParts = BOL_UserDao::getInstance()->getUserQueryFilter("c", "userId", array(
+            "method" => "VIDEO_BOL_ClipDao::getClipsList"
+        ));
+
         switch ( $listtype )
         {
             case 'featured':
                 $clipFeaturedDao = VIDEO_BOL_ClipFeaturedDao::getInstance();
 
                 $query = "
-                    SELECT `c`.*
-                    FROM `" . $this->getTableName() . "` AS `c`
+                    SELECT
+                        `c`.*
+                    FROM
+                        `" . $this->getTableName() . "` AS `c`
                     LEFT JOIN `" . $clipFeaturedDao->getTableName() . "` AS `f` ON (`f`.`clipId`=`c`.`id`)
-                    WHERE `c`.`status` = 'approved' AND `c`.`privacy` = 'everybody' AND `f`.`id` IS NOT NULL
-                    ORDER BY `c`.`addDatetime` DESC
-                    LIMIT :first, :limit";
+                    {$queryParts["join"]}
+                    WHERE
+                        {$queryParts["where"]}
+                            AND
+                        `c`.`status` = 'approved'
+                            AND
+                        `c`.`privacy` = 'everybody'
+                            AND
+                        `f`.`id` IS NOT NULL
+                    ORDER BY
+                        `c`.`addDatetime` DESC
+                    LIMIT
+                        :first, :limit";
 
                 $qParams = array('first' => $first, 'limit' => $limit);
 
                 return $this->dbo->queryForObjectList($query, 'VIDEO_BOL_Clip', $qParams, $cacheLifeTime, $cacheTags);
 
             case 'latest':
-                $example = new OW_Example();
+                $query = "
+                    SELECT
+                        `c`.*
+                    FROM
+                        `" . $this->getTableName() . "` AS `c`
+                    {$queryParts["join"]}
+                    WHERE
+                        {$queryParts["where"]}
+                            AND
+                        `c`.`status` = 'approved'
+                            AND
+                        `c`.`privacy` = 'everybody'
+                    ORDER BY
+                        `c`.`addDatetime` DESC
+                    LIMIT
+                        :first, :limit";
 
-                $example->andFieldEqual('status', 'approved');
-                $example->andFieldEqual('privacy', 'everybody');
-                $example->setOrder('`addDatetime` DESC');
-                $example->setLimitClause($first, $limit);
+                $qParams = array('first' => $first, 'limit' => $limit);
 
-                return $this->findListByExample($example, $cacheLifeTime, $cacheTags);
+                return $this->dbo->queryForObjectList($query, 'VIDEO_BOL_Clip', $qParams, $cacheLifeTime, $cacheTags);
+
+            default :
         }
 
         return null;
@@ -186,31 +216,55 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
      */
     public function countClips( $listtype )
     {
+        $queryParts = BOL_UserDao::getInstance()->getUserQueryFilter("c", "userId", array(
+            "method" => "VIDEO_BOL_ClipDao::countClips"
+        ));
+
         switch ( $listtype )
         {
             case 'featured':
                 $featuredDao = VIDEO_BOL_ClipFeaturedDao::getInstance();
 
                 $query = "
-                    SELECT COUNT(`c`.`id`)       
-                    FROM `" . $this->getTableName() . "` AS `c`
-                    LEFT JOIN `" . $featuredDao->getTableName() . "` AS `f` ON ( `c`.`id` = `f`.`clipId` )
-                    WHERE `c`.`status` = 'approved' AND `c`.`privacy` = 'everybody' AND `f`.`id` IS NOT NULL
+                    SELECT
+                        COUNT(`c`.`id`)
+                    FROM
+                        `" . $this->getTableName() . "` AS `c`
+                    {$queryParts["join"]}
+                    LEFT JOIN
+                        `" . $featuredDao->getTableName() . "` AS `f`
+                    ON
+                        ( `c`.`id` = `f`.`clipId` )
+                    WHERE
+                        {$queryParts["where"]}
+                            AND
+                        `c`.`status` = 'approved'
+                            AND
+                        `c`.`privacy` = 'everybody'
+                            AND
+                        `f`.`id` IS NOT NULL
                 ";
 
                 return $this->dbo->queryForColumn($query);
 
-                break;
-
             case 'latest':
-                $example = new OW_Example();
+                $query = "
+                    SELECT
+                        COUNT(`c`.`id`)
+                    FROM
+                        `" . $this->getTableName() . "` AS `c`
+                    {$queryParts["join"]}
+                    WHERE
+                        {$queryParts["where"]}
+                            AND
+                        `c`.`status` = 'approved'
+                            AND
+                        `c`.`privacy` = 'everybody'
+                ";
 
-                $example->andFieldEqual('status', 'approved');
-                $example->andFieldEqual('privacy', 'everybody');
+                return $this->dbo->queryForColumn($query);
 
-                return $this->countByExample($example);
-
-                break;
+            default :
         }
 
         return null;
