@@ -48,6 +48,12 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
     
     const CACHE_TAG_VIDEO_LIST = 'video.list';
 
+    const STATUS_BLOCKED  = 'blocked';
+    const STATUS_APPROVAL  = 'approval';
+    const STATUS_APPROVED  = 'approved';
+
+    const DEFAULT_PRIVACY  = 'everybody';
+
     /**
      * Class constructor
      *
@@ -126,9 +132,9 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
                     WHERE
                         {$queryParts["where"]}
                             AND
-                        `c`.`status` = 'approved'
+                        `c`.`status` = '" . self::STATUS_APPROVED . "'
                             AND
-                        `c`.`privacy` = 'everybody'
+                        `c`.`privacy` = '" . self::DEFAULT_PRIVACY . "'
                             AND
                         `f`.`id` IS NOT NULL
                     ORDER BY
@@ -150,9 +156,9 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
                     WHERE
                         {$queryParts["where"]}
                             AND
-                        `c`.`status` = 'approved'
+                        `c`.`status` = '" . self::STATUS_APPROVED . "'
                             AND
-                        `c`.`privacy` = 'everybody'
+                        `c`.`privacy` = '" . self::DEFAULT_PRIVACY . "'
                     ORDER BY
                         `c`.`addDatetime` DESC
                     LIMIT
@@ -183,7 +189,7 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
 
         $example = new OW_Example();
 
-        $example->andFieldEqual('status', 'approved');
+        $example->andFieldEqual('status', self::STATUS_APPROVED);
         $example->andFieldEqual('userId', $userId);
 
         if ( $exclude )
@@ -238,9 +244,9 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
                     WHERE
                         {$queryParts["where"]}
                             AND
-                        `c`.`status` = 'approved'
+                        `c`.`status` = '" . self::STATUS_APPROVED . "'
                             AND
-                        `c`.`privacy` = 'everybody'
+                        `c`.`privacy` = '" . self::DEFAULT_PRIVACY . "'
                             AND
                         `f`.`id` IS NOT NULL
                 ";
@@ -257,9 +263,9 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
                     WHERE
                         {$queryParts["where"]}
                             AND
-                        `c`.`status` = 'approved'
+                        `c`.`status` = '" . self::STATUS_APPROVED . "'
                             AND
-                        `c`.`privacy` = 'everybody'
+                        `c`.`privacy` = '" . self::DEFAULT_PRIVACY . "'
                 ";
 
                 return $this->dbo->queryForColumn($query);
@@ -281,7 +287,7 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
         $example = new OW_Example();
 
         $example->andFieldEqual('userId', $userId);
-        $example->andFieldEqual('status', 'approved');
+        $example->andFieldEqual('status', self::STATUS_APPROVED);
 
         return $this->countByExample($example);
     }
