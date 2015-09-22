@@ -113,8 +113,15 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
         $cacheLifeTime = $first == 0 ? 24 * 3600 : null;
         $cacheTags = $first == 0 ? array(self::CACHE_TAG_VIDEO_LIST) : null;
 
-        $queryParts = BOL_UserDao::getInstance()->getUserQueryFilter("c", "userId", array(
-            "method" => "VIDEO_BOL_ClipDao::getClipsList"
+        $queryParts = BOL_ContentService::getInstance()->getQueryFilter(array(
+            BASE_CLASS_QueryBuilderEvent::TABLE_USER => "c",
+            BASE_CLASS_QueryBuilderEvent::TABLE_CONTENT => "c"
+        ), array(
+            BASE_CLASS_QueryBuilderEvent::FIELD_USER_ID => "userId",
+            BASE_CLASS_QueryBuilderEvent::FIELD_CONTENT_ID => "id"
+        ), array(
+            BASE_CLASS_QueryBuilderEvent::OPTION_METHOD => __METHOD__,
+            BASE_CLASS_QueryBuilderEvent::OPTION_TYPE => "video.list"
         ));
 
         switch ( $listtype )
@@ -222,8 +229,17 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
      */
     public function countClips( $listtype )
     {
-        $queryParts = BOL_UserDao::getInstance()->getUserQueryFilter("c", "userId", array(
-            "method" => "VIDEO_BOL_ClipDao::countClips"
+        
+        
+        $queryParts = BOL_ContentService::getInstance()->getQueryFilter(array(
+            BASE_CLASS_QueryBuilderEvent::TABLE_USER => "c",
+            BASE_CLASS_QueryBuilderEvent::TABLE_CONTENT => "c"
+        ), array(
+            BASE_CLASS_QueryBuilderEvent::FIELD_USER_ID => "userId",
+            BASE_CLASS_QueryBuilderEvent::FIELD_CONTENT_ID => "id"
+        ), array(
+            BASE_CLASS_QueryBuilderEvent::OPTION_METHOD => __METHOD__,
+            BASE_CLASS_QueryBuilderEvent::OPTION_TYPE => "video.list"
         ));
 
         switch ( $listtype )
