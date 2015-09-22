@@ -120,8 +120,8 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
             BASE_CLASS_QueryBuilderEvent::FIELD_USER_ID => "userId",
             BASE_CLASS_QueryBuilderEvent::FIELD_CONTENT_ID => "id"
         ), array(
-            "method" => "VIDEO_BOL_ClipDao::getClipsList",
-            "type" => "video.list"
+            BASE_CLASS_QueryBuilderEvent::OPTION_METHOD => __METHOD__,
+            BASE_CLASS_QueryBuilderEvent::OPTION_TYPE => "video.list"
         ));
 
         switch ( $listtype )
@@ -229,6 +229,8 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
      */
     public function countClips( $listtype )
     {
+        
+        
         $queryParts = BOL_ContentService::getInstance()->getQueryFilter(array(
             BASE_CLASS_QueryBuilderEvent::TABLE_USER => "c",
             BASE_CLASS_QueryBuilderEvent::TABLE_CONTENT => "c"
@@ -236,8 +238,8 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
             BASE_CLASS_QueryBuilderEvent::FIELD_USER_ID => "userId",
             BASE_CLASS_QueryBuilderEvent::FIELD_CONTENT_ID => "id"
         ), array(
-            "method" => "VIDEO_BOL_ClipDao::countClips",
-            "type" => "video.list.count"
+            BASE_CLASS_QueryBuilderEvent::OPTION_METHOD => __METHOD__,
+            BASE_CLASS_QueryBuilderEvent::OPTION_TYPE => "video.list"
         ));
 
         switch ( $listtype )
