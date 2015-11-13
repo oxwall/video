@@ -466,8 +466,6 @@ class VIDEO_CLASS_EventHandler
 
             if ( $clipService->addClip($clip) )
             {
-                BOL_AuthorizationService::getInstance()->trackAction('video', 'add');
-
                 if ( !empty($params['tags']) )
                 {
                     BOL_TagService::getInstance()->updateEntityTags($clip->id, 'video', $params['tags']);
@@ -498,7 +496,12 @@ class VIDEO_CLASS_EventHandler
                 )));
 
                 $status = $clipService->findClipById($clip->id)->status;
-                
+
+                if ($status == 'approved')
+                {
+                    BOL_AuthorizationService::getInstance()->trackAction('video', 'add');
+                }
+
                 $e->setData(array(
                     'result' => true,
                     'id' => $clip->id,
@@ -554,6 +557,31 @@ class VIDEO_CLASS_EventHandler
         }
     }
 
+    public function afterContentApprove( OW_Event $event )
+    {
+        $params = $event->getParams();
+
+        if ( $params["entityType"] != VIDEO_BOL_ClipService::ENTITY_TYPE )
+        {
+            return;
+        }
+
+        if ( !$params["isNew"] )
+        {
+            return;
+        }
+
+        $clipService = VIDEO_BOL_ClipService::getInstance();
+        $videoClip = $clipService->findClipById($params["entityId"]);
+
+        if ( $videoClip === null )
+        {
+            return;
+        }
+
+        BOL_AuthorizationService::getInstance()->trackActionForUser($videoClip->userId, 'video', 'add');
+    }
+
     public function genericInit()
     {
         $em = OW::getEventManager();
@@ -574,6 +602,7 @@ class VIDEO_CLASS_EventHandler
         $em->bind('feed.after_like_added', array($this, 'feedVideoLike'));
         $em->bind('feed.before_content_add', array($this, 'feedBeforeStatusUpdate'));
         $em->bind('socialsharing.get_entity_info', array($this, 'sosialSharingGetVideoInfo'));
+        $em->bind('moderation.after_content_approve', array($this, 'afterContentApprove'));
 
         $credits = new VIDEO_CLASS_Credits();
         $em->bind('usercredits.on_action_collect', array($credits, 'bindCreditActionsCollect'));
