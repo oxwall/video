@@ -679,9 +679,10 @@ class VIDEO_CTRL_Video extends OW_ActionController
 
         if ( $delResult )
         {
+            OW::getFeedback()->info(OW::getLanguage()->text('video', 'clip_deleted'));
+
             $return = array(
                 'result' => true,
-                'msg' => OW::getLanguage()->text('video', 'clip_deleted'),
                 'url' => OW_Router::getInstance()->urlForRoute('video_view_list')
             );
         }
