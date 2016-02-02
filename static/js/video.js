@@ -91,9 +91,10 @@ var videoClip = function( params )
             {
             	if ( data.result == true )
             	{
-            		OW.info(data.msg);
-            		if (data.url)
-            			document.location.href = data.url;
+            		if ( data.url )
+                    {
+                        document.location.href = data.url;
+                    }
             	}
             	else if (data.error != undefined)
             	{
