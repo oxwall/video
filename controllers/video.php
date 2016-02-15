@@ -366,6 +366,16 @@ class VIDEO_CTRL_Video extends OW_ActionController
 
         if ( OW::getRequest()->isPost() && $videoEditForm->isValid($_POST) )
         {
+            // validate the embed code
+            $values = $videoEditForm->getValues();
+            $code = $this->clipService->validateClipCode($values['code']);
+
+            if ( !mb_strlen($code) )
+            {
+                OW::getFeedback()->warning($language->text('video', 'resource_not_allowed'));
+                $this->redirect();
+            }
+
             $res = $videoEditForm->process();
             OW::getFeedback()->info($language->text('video', 'clip_updated'));
             $this->redirect(OW::getRouter()->urlForRoute('view_clip', array('id' => $res['id'])));
