@@ -8,7 +8,7 @@
 		        {capture name='url'}{url_for_route for="view_clip:[id=>`$clip.id`]"}{/capture}
 		
                 <div class="ow_other_video_thumb ow_left">
-                    <a href="{$smarty.capture.url}">{if $clip.thumb != 'undefined'}<img src="{$clip.thumb}" />{/if}</a>
+                    <a href="{$smarty.capture.url}">{if $clip.thumb != 'undefined'}<img src="{$clip.thumb}" alt="{$clip.title|escape}" />{/if}</a>
 			    </div>
 		        <div class="ow_other_video_item_title"><a href="{$smarty.capture.url}">{$clip.title}</a></div>
 		    </div>
