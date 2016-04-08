@@ -6,7 +6,7 @@
     {if $data.thumb == 'undefined'}
         <a href="{$smarty.capture.url}" class="ow_video_thumb"></a>
     {else}
-        <a href="{$smarty.capture.url}"><img src="{$data.thumb}" title="{$data.title}" /></a>
+        <a href="{$smarty.capture.url}"><img src="{$data.thumb}" title="{$data.title|escape}" alt="{$data.title|escape}" /></a>
     {/if}
     <div class="ow_video_item_rate">{if $data.listType == 'toprated'}{if $data.score}{display_rate avg_rate=$data.score}{/if}{/if}</div>
     <div class="ow_video_item_title">{$data.title|truncate:55:"..."}</div>

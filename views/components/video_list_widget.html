@@ -33,7 +33,7 @@
 	   <div class="clearfix ow_smallmargin">
             <div class="ow_other_video_thumb ow_left">
                 <a href="{url_for_route for="view_clip:[id=>`$c.id`]"}">
-                    {if $c.thumb != 'undefined'}<img src="{$c.thumb}" />{/if}
+                    {if $c.thumb != 'undefined'}<img src="{$c.thumb}" alt="{$c.title|escape}" />{/if}
                 </a>
             </div>
             <div class="ow_other_video_item_title ow_small">
@@ -50,8 +50,8 @@
 		   <div class="ow_smallmargin">{$c.code}</div>
 		{else}
             <div class="ow_other_video_thumb video_thumb_no_title ow_left">
-				<a class="ow_other_video_floated" href="{url_for_route for="view_clip:[id=>`$c.id`]"}" title="{$c.title}">
-					{if $c.thumb != 'undefined'}<img src="{$c.thumb}" />{/if}
+				<a class="ow_other_video_floated" href="{url_for_route for="view_clip:[id=>`$c.id`]"}" title="{$c.title|escape}">
+					{if $c.thumb != 'undefined'}<img src="{$c.thumb}" alt="{$c.title|escape}" />{/if}
 				</a>
 			</div>
 		{/if}
@@ -69,7 +69,7 @@
        <div class="clearfix ow_smallmargin">
             <div class="ow_other_video_thumb ow_left">
                 <a href="{url_for_route for="view_clip:[id=>`$c.id`]"}">
-                    {if $c.thumb != 'undefined'}<img src="{$c.thumb}" />{/if}
+                    {if $c.thumb != 'undefined'}<img src="{$c.thumb}" alt="{$c.title|escape}" />{/if}
                 </a>
             </div>
             <div class="ow_other_video_item_title ow_small">
@@ -86,7 +86,7 @@
            <div class="ow_smallmargin">{$c.code}</div>
         {else}
 	        <a class="ow_other_video_floated" href="{url_for_route for="view_clip:[id=>`$c.id`]"}" title="{$c.title}">
-	            {if $c.thumb != 'undefined'}<img src="{$c.thumb}" />{/if}
+	            {if $c.thumb != 'undefined'}<img src="{$c.thumb}" alt="{$c.title|escape}" />{/if}
 	        </a>
         {/if}
     {foreachelse}
@@ -103,7 +103,7 @@
        <div class="clearfix ow_smallmargin">
             <div class="ow_other_video_thumb ow_left">
                 <a href="{url_for_route for="view_clip:[id=>`$c.id`]"}">
-                    {if $c.thumb != 'undefined'}<img src="{$c.thumb}" />{/if}
+                    {if $c.thumb != 'undefined'}<img src="{$c.thumb}" alt="{$c.title|escape}" />{/if}
                 </a>
             </div>
             <div class="ow_other_video_item_title ow_small">
@@ -120,7 +120,7 @@
            <div class="ow_smallmargin">{$c.code}</div>
         {else}
 	        <a class="ow_other_video_floated" href="{url_for_route for="view_clip:[id=>`$c.id`]"}" title="{$c.title}">
-	            {if $c.thumb != 'undefined'}<img src="{$c.thumb}" />{/if}
+	            {if $c.thumb != 'undefined'}<img src="{$c.thumb}" alt="{$c.title|escape}" />{/if}
 	        </a>
         {/if}
     {foreachelse}
