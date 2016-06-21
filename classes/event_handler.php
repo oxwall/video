@@ -603,9 +603,12 @@ class VIDEO_CLASS_EventHandler
 
                     foreach ( $userNames as $userName )
                     {
-                        $urls[] = OW::getRouter()->urlForRoute('video_user_video_list', array(
-                            'user' =>  $userName
-                        ));
+                        if ( $userName )
+                        {
+                            $urls[] = OW::getRouter()->urlForRoute('video_user_video_list', array(
+                                'user' => $userName
+                            ));
+                        }
                     }
 
                     $event->setData($urls);
