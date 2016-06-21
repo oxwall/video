@@ -43,3 +43,11 @@ $widgetService->addWidgetToPosition($placeWidget, BOL_ComponentService::SECTION_
 require_once dirname(__FILE__) . DS .  'classes' . DS . 'credits.php';
 $credits = new VIDEO_CLASS_Credits();
 $credits->triggerCreditActionsAdd();
+
+// register sitemap entities
+BOL_SeoService::getInstance()->addSitemapEntity('video', 'video_sitemap', 'video', array(
+    'video_list',
+    'video_tags',
+    'video',
+    'video_authors'
+));

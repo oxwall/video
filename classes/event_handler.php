@@ -582,6 +582,87 @@ class VIDEO_CLASS_EventHandler
         BOL_AuthorizationService::getInstance()->trackActionForUser($videoClip->userId, 'video', 'add');
     }
 
+    /**
+     * Get sitemap urls
+     *
+     * @param OW_Event $event
+     * @return void
+     */
+    public function onSitemapGetUrls( OW_Event $event )
+    {
+        $params = $event->getParams();
+
+        if ( OW::getUser()->isAuthorized('video', 'view') )
+        {
+            switch ( $params['entity'] )
+            {
+                case 'video_authors' :
+                    $urls   = [];
+                    $users  = VIDEO_BOL_ClipService::getInstance()->findLatestPublicClipsAuthorsIds(0, $params['limit']);
+
+                    foreach ( $users as $userId )
+                    {
+                        $userName = BOL_UserService::getInstance()->getUsername($userId);
+
+                        if ( !$userName )
+                        {
+                            continue;
+                        }
+
+                        $urls[] = OW::getRouter()->urlForRoute('video_user_video_list', array(
+                            'user' =>  $userName
+                        ));
+                    }
+
+                    $event->setData($urls);
+                    break;
+
+                case 'video' :
+                    $urls   = [];
+                    $clips  = VIDEO_BOL_ClipService::getInstance()->findClipsList('latest', 1, $params['limit']);
+
+                    foreach ( $clips as $clip )
+                    {
+                        $urls[] = OW::getRouter()->urlForRoute('view_clip', array(
+                            'id' =>  $clip['id']
+                        ));
+                    }
+
+                    $event->setData($urls);
+                    break;
+
+                case 'video_tags' :
+                    $urls  = [];
+                    $tags  = BOL_TagService::getInstance()->findMostPopularTags('video', $params['limit']);
+
+                    foreach ( $tags as $tag )
+                    {
+                        $urls[] = OW::getRouter()->urlForRoute('view_tagged_list', array(
+                            'tag' =>  $tag['label']
+                        ));
+                    }
+
+                    $event->setData($urls);
+                    break;
+
+                case 'video_list' :
+                    $event->setData(array(
+                        OW::getRouter()->urlForRoute('video_list_index'),
+                        OW::getRouter()->urlForRoute('view_list', array(
+                            'listType' =>  'latest'
+                        )),
+                        OW::getRouter()->urlForRoute('view_list', array(
+                            'listType' =>  'toprated'
+                        )),
+                        OW::getRouter()->urlForRoute('view_list', array(
+                            'listType' =>  'tagged'
+                        ))
+                    ));
+                    break;
+            }
+        }
+    }
+
     public function genericInit()
     {
         $em = OW::getEventManager();
@@ -607,5 +688,6 @@ class VIDEO_CLASS_EventHandler
         $credits = new VIDEO_CLASS_Credits();
         $em->bind('usercredits.on_action_collect', array($credits, 'bindCreditActionsCollect'));
         $em->bind('usercredits.get_action_key', array($credits, 'getActionKey'));
+        $em->bind("base.sitemap.get_urls", array($this, "onSitemapGetUrls"));
     }
 }
