@@ -597,10 +597,10 @@ class VIDEO_CLASS_EventHandler
             $urls   = [];
             $limit  = (int) ceil($params['limit'] / 500);
             $offset = 0;
+            $dataAbsent = true;
 
             do
             {
-                $dataAbsent = true;
 
                 switch ( $params['entity'] )
                 {
