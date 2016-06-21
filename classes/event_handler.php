@@ -594,65 +594,88 @@ class VIDEO_CLASS_EventHandler
 
         if ( OW::getUser()->isAuthorized('video', 'view') )
         {
-            switch ( $params['entity'] )
+            $urls   = [];
+            $limit  = (int) ceil($params['limit'] / 500);
+            $offset = 0;
+            $dataAbsent = true;
+
+            do
             {
-                case 'video_authors' :
-                    $urls   = [];
-                    $usersIds  = VIDEO_BOL_ClipService::getInstance()->findLatestPublicClipsAuthorsIds(0, $params['limit']);
-                    $userNames = BOL_UserService::getInstance()->getUserNamesForList($usersIds);
+                switch ( $params['entity'] )
+                {
+                    case 'video_authors' :
+                        $usersIds  = VIDEO_BOL_ClipService::getInstance()->findLatestPublicClipsAuthorsIds($offset, $limit);
+                        $userNames = BOL_UserService::getInstance()->getUserNamesForList($usersIds);
 
-                    foreach ( array_filter($userNames) as $userName )
-                    {
-                        $urls[] = OW::getRouter()->urlForRoute('video_user_video_list', array(
-                            'user' => $userName
-                        ));
-                    }
+                        if ( $userNames )
+                        {
+                            foreach ( array_filter($userNames) as $userName )
+                            {
+                                $urls[] = OW::getRouter()->urlForRoute('video_user_video_list', array(
+                                    'user' => $userName
+                                ));
+                            }
 
-                    $event->setData($urls);
-                    break;
+                            $dataAbsent = false;
+                        }
+                        break;
 
-                case 'video' :
-                    $urls   = [];
-                    $clips  = VIDEO_BOL_ClipService::getInstance()->findClipsList('latest', 1, $params['limit']);
+                    case 'video' :
+                        $page  = ceil($offset / $limit) + 1; // paging emulation
+                        $clips = VIDEO_BOL_ClipService::getInstance()->findClipsList('latest', $page, $limit);
 
-                    foreach ( $clips as $clip )
-                    {
-                        $urls[] = OW::getRouter()->urlForRoute('view_clip', array(
-                            'id' =>  $clip['id']
-                        ));
-                    }
+                        if ( $clips )
+                        {
+                            foreach ( $clips as $clip )
+                            {
+                                $urls[] = OW::getRouter()->urlForRoute('view_clip', array(
+                                    'id' => $clip['id']
+                                ));
+                            }
 
-                    $event->setData($urls);
-                    break;
+                            $dataAbsent = false;
+                        }
+                        break;
 
-                case 'video_tags' :
-                    $urls  = [];
-                    $tags  = BOL_TagService::getInstance()->findMostPopularTags('video', $params['limit']);
+                    case 'video_tags' :
+                        $tags = BOL_TagService::getInstance()->findMostPopularTags('video', $limit, $offset);
 
-                    foreach ( $tags as $tag )
-                    {
-                        $urls[] = OW::getRouter()->urlForRoute('view_tagged_list', array(
-                            'tag' =>  $tag['label']
-                        ));
-                    }
+                        if ( $tags )
+                        {
+                            foreach ( $tags as $tag )
+                            {
+                                $urls[] = OW::getRouter()->urlForRoute('view_tagged_list', array(
+                                    'tag' => $tag['label']
+                                ));
+                            }
 
-                    $event->setData($urls);
-                    break;
+                            $dataAbsent = false;
+                        }
+                        break;
 
-                case 'video_list' :
-                    $event->setData(array(
-                        OW::getRouter()->urlForRoute('video_list_index'),
-                        OW::getRouter()->urlForRoute('view_list', array(
-                            'listType' =>  'latest'
-                        )),
-                        OW::getRouter()->urlForRoute('view_list', array(
-                            'listType' =>  'toprated'
-                        )),
-                        OW::getRouter()->urlForRoute('view_list', array(
-                            'listType' =>  'tagged'
-                        ))
-                    ));
-                    break;
+                    case 'video_list' :
+                        $urls = array(
+                            OW::getRouter()->urlForRoute('video_list_index'),
+                            OW::getRouter()->urlForRoute('view_list', array(
+                                'listType' => 'latest'
+                            )),
+                            OW::getRouter()->urlForRoute('view_list', array(
+                                'listType' => 'toprated'
+                            )),
+                            OW::getRouter()->urlForRoute('view_list', array(
+                                'listType' => 'tagged'
+                            ))
+                        );
+                        break;
+                }
+
+                $offset += $limit;
+            }
+            while (!$dataAbsent);
+
+            if ( $urls )
+            {
+                $event->setData($urls);
             }
         }
     }
