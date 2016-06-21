@@ -598,17 +598,11 @@ class VIDEO_CLASS_EventHandler
             {
                 case 'video_authors' :
                     $urls   = [];
-                    $users  = VIDEO_BOL_ClipService::getInstance()->findLatestPublicClipsAuthorsIds(0, $params['limit']);
+                    $usersIds  = VIDEO_BOL_ClipService::getInstance()->findLatestPublicClipsAuthorsIds(0, $params['limit']);
+                    $userNames = BOL_UserService::getInstance()->getUserNamesForList($usersIds);
 
-                    foreach ( $users as $userId )
+                    foreach ( $userNames as $userName )
                     {
-                        $userName = BOL_UserService::getInstance()->getUsername($userId);
-
-                        if ( !$userName )
-                        {
-                            continue;
-                        }
-
                         $urls[] = OW::getRouter()->urlForRoute('video_user_video_list', array(
                             'user' =>  $userName
                         ));
