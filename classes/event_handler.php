@@ -601,10 +601,10 @@ class VIDEO_CLASS_EventHandler
                     $usersIds  = VIDEO_BOL_ClipService::getInstance()->findLatestPublicClipsAuthorsIds(0, $params['limit']);
                     $userNames = BOL_UserService::getInstance()->getUserNamesForList($usersIds);
 
-                    foreach ( $userNames as $userName )
+                    foreach ( array_filter($userNames) as $userName )
                     {
                         $urls[] = OW::getRouter()->urlForRoute('video_user_video_list', array(
-                            'user' =>  $userName
+                            'user' => $userName
                         ));
                     }
 
