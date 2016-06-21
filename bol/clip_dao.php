@@ -124,8 +124,8 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
         return $this->dbo->queryForColumnList($query, array(
             'privacy' => self::DEFAULT_PRIVACY,
             'status' => self::STATUS_APPROVED,
-            'f' => $first,
-            'c' => $count,
+            'f' => (int) $first,
+            'c' => (int) $count,
         ));
     }
 
@@ -180,7 +180,7 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
                     LIMIT
                         :first, :limit";
 
-                $qParams = array('first' => $first, 'limit' => $limit);
+                $qParams = array('first' => (int) $first, 'limit' => (int) $limit);
 
                 return $this->dbo->queryForObjectList($query, 'VIDEO_BOL_Clip', $qParams, $cacheLifeTime, $cacheTags);
 
@@ -202,7 +202,7 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
                     LIMIT
                         :first, :limit";
 
-                $qParams = array('first' => $first, 'limit' => $limit);
+                $qParams = array('first' => (int) $first, 'limit' => (int) $limit);
 
                 return $this->dbo->queryForObjectList($query, 'VIDEO_BOL_Clip', $qParams, $cacheLifeTime, $cacheTags);
 
