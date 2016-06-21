@@ -601,7 +601,6 @@ class VIDEO_CLASS_EventHandler
 
             do
             {
-
                 switch ( $params['entity'] )
                 {
                     case 'video_authors' :
