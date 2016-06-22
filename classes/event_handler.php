@@ -594,21 +594,32 @@ class VIDEO_CLASS_EventHandler
 
         if ( OW::getUser()->isAuthorized('video', 'view') )
         {
-            $urls   = [];
-            $limit  = (int) ceil($params['limit'] / 500);
+            $urls = [];
+            $urlsCount = 0;
+            $globalLimit = (int) $params['limit'];
+            $localLimit  = 500;
             $offset = 0;
-            $dataAbsent = true;
 
             do
             {
+                $isDataEmpty = true;
+
+                if ( $urlsCount + $localLimit > $globalLimit )
+                {
+                    $localLimit = $globalLimit < $localLimit
+                        ? $globalLimit
+                        : $globalLimit - $urlsCount;
+                }
+
                 switch ( $params['entity'] )
                 {
                     case 'video_authors' :
-                        $usersIds  = VIDEO_BOL_ClipService::getInstance()->findLatestPublicClipsAuthorsIds($offset, $limit);
+                        $usersIds  = VIDEO_BOL_ClipService::getInstance()->findLatestPublicClipsAuthorsIds($offset, $localLimit);
                         $userNames = BOL_UserService::getInstance()->getUserNamesForList($usersIds);
 
                         if ( $userNames )
                         {
+                            // skip deleted users
                             foreach ( array_filter($userNames) as $userName )
                             {
                                 $urls[] = OW::getRouter()->urlForRoute('video_user_video_list', array(
@@ -616,13 +627,13 @@ class VIDEO_CLASS_EventHandler
                                 ));
                             }
 
-                            $dataAbsent = false;
+                            $isDataEmpty = count($usersIds) != $localLimit;
                         }
                         break;
 
                     case 'video' :
-                        $page  = ceil($offset / $limit) + 1; // paging emulation
-                        $clips = VIDEO_BOL_ClipService::getInstance()->findClipsList('latest', $page, $limit);
+                        $page  = ceil($offset / $localLimit) + 1; // paging emulation
+                        $clips = VIDEO_BOL_ClipService::getInstance()->findClipsList('latest', $page, $localLimit);
 
                         if ( $clips )
                         {
@@ -633,12 +644,12 @@ class VIDEO_CLASS_EventHandler
                                 ));
                             }
 
-                            $dataAbsent = false;
+                            $isDataEmpty = count($clips) != $localLimit;
                         }
                         break;
 
                     case 'video_tags' :
-                        $tags = BOL_TagService::getInstance()->findMostPopularTags('video', $limit, $offset);
+                        $tags = BOL_TagService::getInstance()->findMostPopularTags('video', $localLimit, $offset);
 
                         if ( $tags )
                         {
@@ -649,7 +660,7 @@ class VIDEO_CLASS_EventHandler
                                 ));
                             }
 
-                            $dataAbsent = false;
+                            $isDataEmpty = count($tags) != $localLimit;
                         }
                         break;
 
@@ -669,9 +680,10 @@ class VIDEO_CLASS_EventHandler
                         break;
                 }
 
-                $offset += $limit;
+                $urlsCount = count($urls);
+                $offset += $localLimit;
             }
-            while (!$dataAbsent);
+            while ($urlsCount < $globalLimit && !$isDataEmpty);
 
             if ( $urls )
             {
