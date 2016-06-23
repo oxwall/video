@@ -594,96 +594,64 @@ class VIDEO_CLASS_EventHandler
 
         if ( OW::getUser()->isAuthorized('video', 'view') )
         {
-            $urls = [];
-            $urlsCount = 0;
-            $globalLimit = (int) $params['limit'];
-            $localLimit  = 500;
-            $offset = 0;
+            $offset = (int) $params['offset'];
+            $limit  = (int) $params['limit'];
+            $urls   = array();
 
-            do
+            switch ( $params['entity'] )
             {
-                $isDataEmpty = true;
+                case 'video_authors' :
+                    $usersIds  = VIDEO_BOL_ClipService::getInstance()->findLatestPublicClipsAuthorsIds($offset, $limit);
+                    $userNames = BOL_UserService::getInstance()->getUserNamesForList($usersIds);
 
-                if ( $urlsCount + $localLimit > $globalLimit )
-                {
-                    $localLimit = $globalLimit < $localLimit
-                        ? $globalLimit
-                        : $globalLimit - $urlsCount;
-                }
+                    // skip deleted users
+                    foreach ( array_filter($userNames) as $userName )
+                    {
+                        $urls[] = OW::getRouter()->urlForRoute('video_user_video_list', array(
+                            'user' => $userName
+                        ));
+                    }
+                    break;
 
-                switch ( $params['entity'] )
-                {
-                    case 'video_authors' :
-                        $usersIds  = VIDEO_BOL_ClipService::getInstance()->findLatestPublicClipsAuthorsIds($offset, $localLimit);
-                        $userNames = BOL_UserService::getInstance()->getUserNamesForList($usersIds);
+                case 'video' :
+                    $page  = ceil($offset / $limit) + 1; // paging emulation
+                    $clips = VIDEO_BOL_ClipService::getInstance()->findClipsList('latest', $page, $limit);
 
-                        if ( $userNames )
-                        {
-                            // skip deleted users
-                            foreach ( array_filter($userNames) as $userName )
-                            {
-                                $urls[] = OW::getRouter()->urlForRoute('video_user_video_list', array(
-                                    'user' => $userName
-                                ));
-                            }
+                    foreach ( $clips as $clip )
+                    {
+                        $urls[] = OW::getRouter()->urlForRoute('view_clip', array(
+                            'id' => $clip['id']
+                        ));
+                    }
+                    break;
 
-                            $isDataEmpty = count($usersIds) != $localLimit;
-                        }
-                        break;
+                case 'video_tags' :
+                    $tags = BOL_TagService::getInstance()->findMostPopularTags('video', $limit, $offset);
 
-                    case 'video' :
-                        $page  = ceil($offset / $localLimit) + 1; // paging emulation
-                        $clips = VIDEO_BOL_ClipService::getInstance()->findClipsList('latest', $page, $localLimit);
+                    foreach ( $tags as $tag )
+                    {
+                        $urls[] = OW::getRouter()->urlForRoute('view_tagged_list', array(
+                            'tag' => $tag['label']
+                        ));
+                    }
+                    break;
 
-                        if ( $clips )
-                        {
-                            foreach ( $clips as $clip )
-                            {
-                                $urls[] = OW::getRouter()->urlForRoute('view_clip', array(
-                                    'id' => $clip['id']
-                                ));
-                            }
+                case 'video_list' :
+                    $urls[] = OW::getRouter()->urlForRoute('video_list_index');
 
-                            $isDataEmpty = count($clips) != $localLimit;
-                        }
-                        break;
+                    $urls[] = OW::getRouter()->urlForRoute('view_list', array(
+                        'listType' => 'latest'
+                    ));
 
-                    case 'video_tags' :
-                        $tags = BOL_TagService::getInstance()->findMostPopularTags('video', $localLimit, $offset);
+                    $urls[] = OW::getRouter()->urlForRoute('view_list', array(
+                        'listType' => 'toprated'
+                    ));
 
-                        if ( $tags )
-                        {
-                            foreach ( $tags as $tag )
-                            {
-                                $urls[] = OW::getRouter()->urlForRoute('view_tagged_list', array(
-                                    'tag' => $tag['label']
-                                ));
-                            }
-
-                            $isDataEmpty = count($tags) != $localLimit;
-                        }
-                        break;
-
-                    case 'video_list' :
-                        $urls = array(
-                            OW::getRouter()->urlForRoute('video_list_index'),
-                            OW::getRouter()->urlForRoute('view_list', array(
-                                'listType' => 'latest'
-                            )),
-                            OW::getRouter()->urlForRoute('view_list', array(
-                                'listType' => 'toprated'
-                            )),
-                            OW::getRouter()->urlForRoute('view_list', array(
-                                'listType' => 'tagged'
-                            ))
-                        );
-                        break;
-                }
-
-                $urlsCount = count($urls);
-                $offset += $localLimit;
+                    $urls[] = OW::getRouter()->urlForRoute('view_list', array(
+                        'listType' => 'tagged'
+                    ));
+                    break;
             }
-            while ($urlsCount < $globalLimit && !$isDataEmpty);
 
             if ( $urls )
             {
