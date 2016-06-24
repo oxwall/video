@@ -311,7 +311,7 @@ class VIDEO_CTRL_Video extends OW_ActionController
 
         OW::getDocument()->addOnloadScript($js, 1001);
 
-        OW::getDocument()->setTitle($language->text('video', 'meta_title_video_view', array('title' => $clip->title)));
+//        OW::getDocument()->setTitle($language->text('video', 'meta_title_video_view', array('title' => $clip->title)));
         $tagsArr = BOL_TagService::getInstance()->findEntityTags($clip->id, 'video');
 
         $labels = array();
@@ -320,10 +320,21 @@ class VIDEO_CTRL_Video extends OW_ActionController
             $labels[] = $t->label;
         }
         $tagStr = $tagsArr ? implode(', ', $labels) : '';
-        OW::getDocument()->setDescription($language->text('video', 'meta_description_video_view', array('title' => $clip->title, 'tags' => $tagStr)));
+//        OW::getDocument()->setDescription($language->text('video', 'meta_description_video_view', array('title' => $clip->title, 'tags' => $tagStr)));
 
         $clipThumbUrl = $this->clipService->getClipThumbUrl($id);
         $this->assign('clipThumbUrl', $clipThumbUrl);
+
+        $params = array(
+            "entityKey" => "viewClip",
+            "title" => "video+meta_title_view_clip",
+            "description" => "video+meta_desc_view_clip",
+            "keywords" => "video+meta_keywords_view_clip",
+            "vars" => array("video_title" => $clip->title, "user_name" => $displayName),
+            "image" => $clipThumbUrl
+        );
+
+        OW::getEventManager()->trigger(new OW_Event("base.provide_page_meta_info", $params));
     }
 
     public function edit( array $params )
@@ -451,8 +462,18 @@ class VIDEO_CTRL_Video extends OW_ActionController
 
         OW::getDocument()->setHeading(OW::getLanguage()->text('video', 'page_title_browse_video'));
         OW::getDocument()->setHeadingIconClass('ow_ic_video');
-        OW::getDocument()->setTitle(OW::getLanguage()->text('video', 'meta_title_video_'.$listType));
-        OW::getDocument()->setDescription(OW::getLanguage()->text('video', 'meta_description_video_'.$listType));
+        //OW::getDocument()->setTitle(OW::getLanguage()->text('video', 'meta_title_video_'.$listType));
+        //OW::getDocument()->setDescription(OW::getLanguage()->text('video', 'meta_description_video_'.$listType));
+
+        $params = array(
+            "entityKey" => "viewList",
+            "title" => "video+meta_title_view_list",
+            "description" => "video+meta_desc_view_list",
+            "keywords" => "video+meta_keywords_view_list",
+            "vars" => array("video_list" => OW::getLanguage()->text("video", "{$listType}_list_label"))
+        );
+
+        OW::getEventManager()->trigger(new OW_Event("base.provide_page_meta_info", $params));
     }
 
     /**
@@ -508,8 +529,21 @@ class VIDEO_CTRL_Video extends OW_ActionController
 
         OW::getDocument()->setHeading($heading);
         OW::getDocument()->setHeadingIconClass('ow_ic_video');
-        OW::getDocument()->setTitle($lang->text('video', 'meta_title_user_video', array('displayName' => $displayName)));
-        OW::getDocument()->setDescription($lang->text('video', 'meta_description_user_video', array('displayName' => $displayName)));
+//        OW::getDocument()->setTitle($lang->text('video', 'meta_title_user_video', array('displayName' => $displayName)));
+//        OW::getDocument()->setDescription($lang->text('video', 'meta_description_user_video', array('displayName' => $displayName)));
+
+        $vars = BOL_SeoService::getInstance()->getUserMetaInfo($user);
+
+        $params = array(
+            "entityKey" => "userVideoList",
+            "title" => "video+meta_title_user_video_list",
+            "description" => "video+meta_desc_user_video_list",
+            "keywords" => "video+meta_keywords_user_video_list",
+            "vars" => $vars,
+            "image" => BOL_AvatarService::getInstance()->getAvatarUrl($user->getId(), 2)
+        );
+
+        OW::getEventManager()->trigger(new OW_Event("base.provide_page_meta_info", $params));
     }
 
     /**
@@ -556,8 +590,19 @@ class VIDEO_CTRL_Video extends OW_ActionController
         {
             $this->assign('tag', $tag);
 
-            OW::getDocument()->setTitle(OW::getLanguage()->text('video', 'meta_title_video_tagged_as', array('tag' => $tag)));
-            OW::getDocument()->setDescription(OW::getLanguage()->text('video', 'meta_description_video_tagged_as', array('tag' => $tag)));
+//            OW::getDocument()->setTitle(OW::getLanguage()->text('video', 'meta_title_video_tagged_as', array('tag' => $tag)));
+//            OW::getDocument()->setDescription(OW::getLanguage()->text('video', 'meta_description_video_tagged_as', array('tag' => $tag)));
+
+            $params = array(
+                "entityKey" => "tagList",
+                "title" => "video+meta_title_tag_list",
+                "description" => "video+meta_desc_tag_list",
+                "keywords" => "video+meta_keywords_tag_list",
+                "vars" => array( "video_tag_name" => $tag )
+            );
+
+            OW::getEventManager()->trigger(new OW_Event("base.provide_page_meta_info", $params));
+
         }
         else
         {
@@ -565,7 +610,7 @@ class VIDEO_CTRL_Video extends OW_ActionController
             $tags->setRouteName('view_tagged_list');
             $this->addComponent('tags', $tags);
 
-            OW::getDocument()->setTitle(OW::getLanguage()->text('video', 'meta_title_video_tagged'));
+            //OW::getDocument()->setTitle(OW::getLanguage()->text('video', 'meta_title_video_tagged'));
             $tagsArr = BOL_TagService::getInstance()->findMostPopularTags('video', 20);
 
             $labels = array();
@@ -574,7 +619,16 @@ class VIDEO_CTRL_Video extends OW_ActionController
                 $labels[] = $t['label'];
             }
             $tagStr = $tagsArr ? implode(', ', $labels) : '';
-            OW::getDocument()->setDescription(OW::getLanguage()->text('video', 'meta_description_video_tagged', array('topTags' => $tagStr)));
+            //OW::getDocument()->setDescription(OW::getLanguage()->text('video', 'meta_description_video_tagged', array('topTags' => $tagStr)));
+
+            $params = array(
+                "entityKey" => "taggedList",
+                "title" => "video+meta_title_tagged_list",
+                "description" => "video+meta_desc_tagged_list",
+                "keywords" => "video+meta_keywords_tagged_list"
+            );
+
+            OW::getEventManager()->trigger(new OW_Event("base.provide_page_meta_info", $params));
         }
 
         $this->assign('listType', 'tagged');
