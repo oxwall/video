@@ -73,7 +73,7 @@ class VideoProviders
                 self::PROVIDER_YOUTUBE => '//www.youtube(-nocookie)?.com/',
                 self::PROVIDER_GOOGLEVIDEO => 'http://video.google.com/',
                 self::PROVIDER_METACAFE => 'http://www.metacafe.com/',
-                self::PROVIDER_DAILYMOTION => 'http://www.dailymotion.com/',
+                self::PROVIDER_DAILYMOTION => '//www.dailymotion.com/',
                 self::PROVIDER_PORNHUB => 'http://www.pornhub.com/',
                 self::PROVIDER_MYSPACE => 'http://mediaservices.myspace.com/',
                 self::PROVIDER_VIMEO => 'http://(player\.)?vimeo.com/',
@@ -209,8 +209,8 @@ class VideoProviderMetacafe
 
 class VideoProviderDailymotion
 {
-    const clipUidPattern = 'http://www.dailymotion.com/(swf|embed)/video/([^"]+)"';
-    const thumbUrlPattern = 'http://www.dailymotion.com/thumbnail/video/()';
+    const clipUidPattern = '//www.dailymotion.com/(swf|embed)/video/([^"]+)"';
+    const thumbUrlPattern = '//www.dailymotion.com/thumbnail/video/()';
 
     private static function getUid( $code )
     {
