@@ -592,7 +592,7 @@ class VIDEO_CLASS_EventHandler
     {
         $params = $event->getParams();
 
-        if ( OW::getUser()->isAuthorized('video', 'view') )
+        if ( BOL_AuthorizationService::getInstance()->isActionAuthorizedForGuest('video', 'view') )
         {
             $offset = (int) $params['offset'];
             $limit  = (int) $params['limit'];
