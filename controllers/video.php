@@ -326,6 +326,7 @@ class VIDEO_CTRL_Video extends OW_ActionController
         $this->assign('clipThumbUrl', $clipThumbUrl);
 
         $params = array(
+            "sectionKey" => "video",
             "entityKey" => "viewClip",
             "title" => "video+meta_title_view_clip",
             "description" => "video+meta_desc_view_clip",
@@ -466,6 +467,7 @@ class VIDEO_CTRL_Video extends OW_ActionController
         //OW::getDocument()->setDescription(OW::getLanguage()->text('video', 'meta_description_video_'.$listType));
 
         $params = array(
+            "sectionKey" => "video",
             "entityKey" => "viewList",
             "title" => "video+meta_title_view_list",
             "description" => "video+meta_desc_view_list",
@@ -535,6 +537,7 @@ class VIDEO_CTRL_Video extends OW_ActionController
         $vars = BOL_SeoService::getInstance()->getUserMetaInfo($user);
 
         $params = array(
+            "sectionKey" => "video",
             "entityKey" => "userVideoList",
             "title" => "video+meta_title_user_video_list",
             "description" => "video+meta_desc_user_video_list",
@@ -594,6 +597,7 @@ class VIDEO_CTRL_Video extends OW_ActionController
 //            OW::getDocument()->setDescription(OW::getLanguage()->text('video', 'meta_description_video_tagged_as', array('tag' => $tag)));
 
             $params = array(
+                "sectionKey" => "video",
                 "entityKey" => "tagList",
                 "title" => "video+meta_title_tag_list",
                 "description" => "video+meta_desc_tag_list",
@@ -622,6 +626,7 @@ class VIDEO_CTRL_Video extends OW_ActionController
             //OW::getDocument()->setDescription(OW::getLanguage()->text('video', 'meta_description_video_tagged', array('topTags' => $tagStr)));
 
             $params = array(
+                "sectionKey" => "video",
                 "entityKey" => "taggedList",
                 "title" => "video+meta_title_tagged_list",
                 "description" => "video+meta_desc_tagged_list",
