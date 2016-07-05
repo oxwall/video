@@ -722,8 +722,7 @@ class VIDEO_CLASS_EventHandler
                 "vars" => array("user_name", "user_gender", "user_age", "user_location", "site_name")
             )
         );
-
-
+        
         foreach ($items as &$item)
         {
             $item["sectionLabel"] = $language->text("video", "seo_meta_section");
