@@ -395,6 +395,7 @@ class VIDEO_CLASS_EventHandler
 
         $em->bind(BASE_CMP_AddNewContent::EVENT_NAME, array($this, 'addNewContentItem'));
         $em->bind(BASE_CMP_QuickLinksWidget::EVENT_NAME, array($this, 'quickLinks'));
+        $em->bind("base.collect_seo_meta_data", array($this, 'onCollectMetaData'));
     }
 
     public function sosialSharingGetVideoInfo( OW_Event $event )
@@ -582,6 +583,154 @@ class VIDEO_CLASS_EventHandler
         BOL_AuthorizationService::getInstance()->trackActionForUser($videoClip->userId, 'video', 'add');
     }
 
+    /**
+     * Get sitemap urls
+     *
+     * @param OW_Event $event
+     * @return void
+     */
+    public function onSitemapGetUrls( OW_Event $event )
+    {
+        $params = $event->getParams();
+
+        if ( BOL_AuthorizationService::getInstance()->isActionAuthorizedForGuest('video', 'view') )
+        {
+            $offset = (int) $params['offset'];
+            $limit  = (int) $params['limit'];
+            $urls   = array();
+
+            switch ( $params['entity'] )
+            {
+                case 'video_authors' :
+                    $usersIds  = VIDEO_BOL_ClipService::getInstance()->findLatestPublicClipsAuthorsIds($offset, $limit);
+                    $userNames = BOL_UserService::getInstance()->getUserNamesForList($usersIds);
+
+                    // skip deleted users
+                    foreach ( array_filter($userNames) as $userName )
+                    {
+                        $urls[] = OW::getRouter()->urlForRoute('video_user_video_list', array(
+                            'user' => $userName
+                        ));
+                    }
+                    break;
+
+                case 'video' :
+                    $page  = ceil($offset / $limit) + 1; // paging emulation
+                    $clips = VIDEO_BOL_ClipService::getInstance()->findClipsList('latest', $page, $limit);
+
+                    foreach ( $clips as $clip )
+                    {
+                        $urls[] = OW::getRouter()->urlForRoute('view_clip', array(
+                            'id' => $clip['id']
+                        ));
+                    }
+                    break;
+
+                case 'video_tags' :
+                    $tags = BOL_TagService::getInstance()->findMostPopularTags('video', $limit, $offset);
+
+                    foreach ( $tags as $tag )
+                    {
+                        $urls[] = OW::getRouter()->urlForRoute('view_tagged_list', array(
+                            'tag' => $tag['label']
+                        ));
+                    }
+                    break;
+
+                case 'video_list' :
+                    $urls[] = OW::getRouter()->urlForRoute('video_list_index');
+
+                    $urls[] = OW::getRouter()->urlForRoute('view_list', array(
+                        'listType' => 'latest'
+                    ));
+
+                    $urls[] = OW::getRouter()->urlForRoute('view_list', array(
+                        'listType' => 'toprated'
+                    ));
+
+                    $urls[] = OW::getRouter()->urlForRoute('view_list', array(
+                        'listType' => 'tagged'
+                    ));
+                    break;
+            }
+
+            if ( $urls )
+            {
+                $event->setData($urls);
+            }
+        }
+    }
+
+    public function onCollectMetaData( BASE_CLASS_EventCollector $e )
+    {
+        $language = OW::getLanguage();
+
+        $items = array(
+            array(
+                "entityKey" => "taggedList",
+                "entityLabel" => $language->text("video", "seo_meta_tagged_list_label"),
+                "iconClass" => "ow_ic_tag",
+                "langs" => array(
+                    "title" => "video+meta_title_tagged_list",
+                    "description" => "video+meta_desc_tagged_list",
+                    "keywords" => "video+meta_keywords_tagged_list"
+                ),
+                "vars" => array("site_name")
+            ),
+            array(
+                "entityKey" => "viewList",
+                "entityLabel" => $language->text("video", "seo_meta_view_list_label"),
+                "iconClass" => "ow_ic_newsfeed",
+                "langs" => array(
+                    "title" => "video+meta_title_view_list",
+                    "description" => "video+meta_desc_view_list",
+                    "keywords" => "video+meta_keywords_view_list"
+                ),
+                "vars" => array("site_name", "video_list")
+            ),
+            array(
+                "entityKey" => "viewClip",
+                "entityLabel" => $language->text("video", "seo_meta_view_clip_label"),
+                "iconClass" => "ow_ic_video",
+                "langs" => array(
+                    "title" => "video+meta_title_view_clip",
+                    "description" => "video+meta_desc_view_clip",
+                    "keywords" => "video+meta_keywords_view_clip"
+                ),
+                "vars" => array("site_name", "video_title", "user_name")
+            ),
+            array(
+                "entityKey" => "tagList",
+                "entityLabel" => $language->text("video", "seo_meta_tag_list_label"),
+                "iconClass" => "ow_ic_tag",
+                "langs" => array(
+                    "title" => "video+meta_title_tag_list",
+                    "description" => "video+meta_desc_tag_list",
+                    "keywords" => "video+meta_keywords_tag_list"
+                ),
+                "vars" => array("site_name", "video_tag_name")
+            ),
+            array(
+                "entityKey" => "userVideoList",
+                "entityLabel" => $language->text("video", "seo_meta_user_video_list_label"),
+                "iconClass" => "ow_ic_user",
+                "langs" => array(
+                    "title" => "video+meta_title_user_video_list",
+                    "description" => "video+meta_desc_user_video_list",
+                    "keywords" => "video+meta_keywords_user_video_list",
+                ),
+                "vars" => array("user_name", "user_gender", "user_age", "user_location", "site_name")
+            )
+        );
+        
+        foreach ($items as &$item)
+        {
+            $item["sectionLabel"] = $language->text("video", "seo_meta_section");
+            $item["sectionKey"] = "video";
+            $e->add($item);
+        }
+    }
+
     public function genericInit()
     {
         $em = OW::getEventManager();
@@ -607,5 +756,6 @@ class VIDEO_CLASS_EventHandler
         $credits = new VIDEO_CLASS_Credits();
         $em->bind('usercredits.on_action_collect', array($credits, 'bindCreditActionsCollect'));
         $em->bind('usercredits.get_action_key', array($credits, 'getActionKey'));
+        $em->bind("base.sitemap.get_urls", array($this, "onSitemapGetUrls"));
     }
 }

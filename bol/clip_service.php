@@ -174,6 +174,18 @@ final class VIDEO_BOL_ClipService
     }
 
     /**
+     * Find latest clips authors ids
+     *
+     * @param integer $first
+     * @param integer $count
+     * @return array
+     */
+    public function findLatestPublicClipsAuthorsIds($first, $count)
+    {
+        return $this->clipDao->findLatestPublicClipsAuthorsIds($first, $count);
+    }
+
+    /**
      * Finds video clips list of specified type 
      *
      * @param string $type

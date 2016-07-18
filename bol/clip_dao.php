@@ -99,6 +99,37 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
     }
 
     /**
+     * Find latest clips authors ids
+     *
+     * @param integer $first
+     * @param integer $count
+     * @return array
+     */
+    public function findLatestPublicClipsAuthorsIds($first, $count)
+    {
+        $query = "SELECT
+            `userId`
+        FROM
+            `" . $this->getTableName() . "`
+        WHERE
+            `privacy` = :privacy
+                AND
+            `status` = :status
+        GROUP BY
+            `userId`
+        ORDER BY
+            `addDatetime` DESC
+        LIMIT :f, :c";
+
+        return $this->dbo->queryForColumnList($query, array(
+            'privacy' => self::DEFAULT_PRIVACY,
+            'status' => self::STATUS_APPROVED,
+            'f' => (int) $first,
+            'c' => (int) $count,
+        ));
+    }
+
+    /**
      * Get clips list (featured|latest|toprated)
      *
      * @param string $listtype
@@ -149,7 +180,7 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
                     LIMIT
                         :first, :limit";
 
-                $qParams = array('first' => $first, 'limit' => $limit);
+                $qParams = array('first' => (int) $first, 'limit' => (int) $limit);
 
                 return $this->dbo->queryForObjectList($query, 'VIDEO_BOL_Clip', $qParams, $cacheLifeTime, $cacheTags);
 
@@ -171,7 +202,7 @@ class VIDEO_BOL_ClipDao extends OW_BaseDao
                     LIMIT
                         :first, :limit";
 
-                $qParams = array('first' => $first, 'limit' => $limit);
+                $qParams = array('first' => (int) $first, 'limit' => (int) $limit);
 
                 return $this->dbo->queryForObjectList($query, 'VIDEO_BOL_Clip', $qParams, $cacheLifeTime, $cacheTags);
 
