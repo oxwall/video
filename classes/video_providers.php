@@ -41,18 +41,11 @@ class VideoProviders
     private $code;
 
     const PROVIDER_YOUTUBE = 'youtube';
-    const PROVIDER_GOOGLEVIDEO = 'googlevideo';
     const PROVIDER_METACAFE = 'metacafe';
     const PROVIDER_DAILYMOTION = 'dailymotion';
     const PROVIDER_PORNHUB = 'pornhub';
-    const PROVIDER_MYSPACE = 'myspace';
     const PROVIDER_VIMEO = 'vimeo';
-    const PROVIDER_BLIPTV = 'bliptv';
-    const PROVIDER_GUBA = 'guba';
-    const PROVIDER_BIGTUBE = 'bigtube';
-    const PROVIDER_TNAFLIX = 'tnaflix';
     const PROVIDER_XHAMSTER = 'xhamster';
-    const PROVIDER_FACEBOOK = 'facebook';
 
     const PROVIDER_UNDEFINED = 'undefined';
 
@@ -71,18 +64,11 @@ class VideoProviders
         {
             self::$provArr = array(
                 self::PROVIDER_YOUTUBE => '//www.youtube(-nocookie)?.com/',
-                self::PROVIDER_GOOGLEVIDEO => 'http://video.google.com/',
-                self::PROVIDER_METACAFE => 'http://www.metacafe.com/',
+                self::PROVIDER_METACAFE => '//www.metacafe.com/',
                 self::PROVIDER_DAILYMOTION => '//www.dailymotion.com/',
-                self::PROVIDER_PORNHUB => 'http://www.pornhub.com/',
-                self::PROVIDER_MYSPACE => 'http://mediaservices.myspace.com/',
-                self::PROVIDER_VIMEO => 'http://(player\.)?vimeo.com/',
-                self::PROVIDER_BLIPTV => 'http://blip.tv/',
-                self::PROVIDER_GUBA => 'http://www.guba.com/',
-                self::PROVIDER_BIGTUBE => 'http://www.bigtube.com/',
-                self::PROVIDER_TNAFLIX => 'http://www.tnaflix.com/',
-                self::PROVIDER_XHAMSTER => 'http://xhamster.com/',
-                self::PROVIDER_FACEBOOK => 'http://www.facebook.com/'
+                self::PROVIDER_PORNHUB => '//www.pornhub.com/',
+                self::PROVIDER_VIMEO => '//(player\.)?vimeo.com/',
+                self::PROVIDER_XHAMSTER => '//xhamster.com/'
             );
         }
     }
@@ -148,57 +134,24 @@ class VideoProviderYoutube
     }
 }
 
-class VideoProviderGooglevideo
-{
-    const clipUidPattern = 'http:\/\/video\.google\.com\/googleplayer\.swf\?docid=([^\"][a-zA-Z0-9-_]+)[&\"]';
-    const thumbXmlPattern = 'http://video.google.com/videofeed?docid=()';
-
-    private static function getUid( $code )
-    {
-        $pattern = self::clipUidPattern;
-
-        return preg_match("~{$pattern}~", $code, $match) ? $match[1] : null;
-    }
-
-    public static function getThumbUrl( $code )
-    {
-        if ( ($uid = self::getUid($code)) !== null )
-        {
-            $xmlUrl = str_replace('()', $uid, self::thumbXmlPattern);
-
-            $fileCont = @file_get_contents($xmlUrl);
-
-            if ( strlen($fileCont) )
-            {
-                preg_match("/media:thumbnail url=\"([^\"]\S*)\"/siU", $fileCont, $match);
-
-                $url = isset($match[1]) ? $match[1] : VideoProviders::PROVIDER_UNDEFINED;
-            }
-
-            return !empty($url) ? $url : VideoProviders::PROVIDER_UNDEFINED;
-        }
-
-        return VideoProviders::PROVIDER_UNDEFINED;
-    }
-}
-
 class VideoProviderMetacafe
 {
-    const clipUidPattern = 'http://www.metacafe.com/fplayer/([^/]+)/';
-    const thumbUrlPattern = 'http://www.metacafe.com/thumb/().jpg';
+    const clipUidPattern = 'http://www.metacafe.com/embed/([^/]+)/';
+    const thumbUrlPattern = 'http://cdn.mcstatic.com/contents/videos_screenshots/(folder)/()/preview.jpg';
 
     private static function getUid( $code )
     {
         $pattern = self::clipUidPattern;
 
-        return preg_match("~{$pattern}~", $code, $match) ? $match[1] : null;
+        return preg_match("~{$pattern}~", $code, $match) ? (int) $match[1] : null;
     }
 
     public static function getThumbUrl( $code )
     {
         if ( ($uid = self::getUid($code)) !== null )
         {
-            $url = str_replace('()', $uid, self::thumbUrlPattern);
+            $folder = substr($uid, 0, -3) * 1000;
+            $url = str_replace(['(folder)', '()'], [$folder, $uid], self::thumbUrlPattern);
 
             return strlen($url) ? $url : VideoProviders::PROVIDER_UNDEFINED;
         }
@@ -234,84 +187,16 @@ class VideoProviderDailymotion
 
 class VideoProviderPornhub
 {
-    const clipUidPattern = 'http://www.pornhub.com/embed_player.php\?id\=([\d]+)';
-    const thumbUrlPattern = 'http://pics1.pornhub.com/thumbs/()//small.jpg';
-
-    private static function getUid( $code )
-    {
-        $pattern = self::clipUidPattern;
-
-        $uid = preg_match("~{$pattern}~", $code, $match) ? $match[1] : null;
-
-        return $uid;
-    }
-
     public static function getThumbUrl( $code )
     {
-        if ( ($uid = self::getUid($code)) !== null )
-        {
-            $uid = sprintf("%'09s", $uid);
-
-            $res = '';
-            for ( $i = 0; $i < strlen($uid); $i += 3 )
-            {
-                if ( isset($uid[$i]) )
-                    $res .= $uid[$i]; else
-                    break;
-                if ( isset($uid[$i + 1]) )
-                    $res .= $uid[$i + 1]; else
-                    break;
-                if ( isset($uid[$i + 2]) )
-                    $res .= $uid[$i + 2] . '/'; else
-                    break;
-            }
-
-            $res = substr($res, 0, -1);
-
-            $url = str_replace('()', $res, self::thumbUrlPattern);
-
-            return strlen($url) ? $url : VideoProviders::PROVIDER_UNDEFINED;
-        }
-
-        return VideoProviders::PROVIDER_UNDEFINED;
-    }
-}
-
-class VideoProviderMyspace
-{
-    const clipUidPattern = 'http:\/\/mediaservices\.myspace\.com.*embed.aspx\/m=([0-9]*)';
-    const thumbXmlPattern = 'http://mediaservices.myspace.com/services/rss.ashx?type=video&videoID=()';
-
-    private static function getUid( $code )
-    {
-        $pattern = self::clipUidPattern;
-
-        return preg_match("~{$pattern}~", $code, $match) ? $match[1] : null;
-    }
-
-    public static function getThumbUrl( $code )
-    {
-        if ( ($uid = self::getUid($code)) !== null )
-        {
-            $xmlUrl = str_replace('()', $uid, self::thumbXmlPattern);
-
-            $xml = @simplexml_load_string(str_replace('media:thumbnail', 'mediathumbnail', @file_get_contents($xmlUrl)));
-            if ( mb_strlen($xml) ) 
-            {
-                $url = $xml->channel->item->mediathumbnail['url'];
-            }
-
-            return !empty($url) ? $url : VideoProviders::PROVIDER_UNDEFINED;
-        }
-
         return VideoProviders::PROVIDER_UNDEFINED;
     }
 }
 
 class VideoProviderVimeo
 {
-    const clipUidPattern = 'http:\/\/vimeo\.com\/([0-9]*)["]|http:\/\/player\.vimeo\.com\/video\/([0-9]*)[\?]';
-    const thumbXmlPattern = 'http://vimeo.com/api/v2/video/().xml';
+    const clipUidPattern = 'https:\/\/vimeo\.com\/([0-9]*)["]|https:\/\/player\.vimeo\.com\/video\/([0-9]*)[\?]';
+    const thumbXmlPattern = 'https://vimeo.com/api/v2/video/().xml';
 
     private static function getUid( $code )
     {
@@ -351,133 +236,11 @@ class VideoProviderVimeo
     }
 }
 
-class VideoProviderBliptv
-{
-    const clipUidPattern = 'http:\/\/blip\.tv\/play\/([^"]+)\"';
-    const thumbJsonPattern = 'http://blip.tv/players/episode/()?skin=json&version=2&callback=meta';
-
-    private static function getUid( $code )
-    {
-        $pattern = self::clipUidPattern;
-
-        return preg_match("~{$pattern}~", $code, $match) ? $match[1] : null;
-    }
-
-    public static function getThumbUrl( $code )
-    {
-        if ( ($uid = self::getUid($code)) !== null )
-        {
-            $jsonUrl = str_replace('()', $uid, self::thumbJsonPattern);
-
-            $fileCont = @file_get_contents($jsonUrl);
-
-            if ( strlen($fileCont) )
-            {
-                $fileCont = trim($fileCont);
-                $fileCont = substr($fileCont, 6, strlen($fileCont) - 9);
-                $metaObj = @json_decode($fileCont);
-
-                if ( $metaObj )
-                {
-                    $url = @$metaObj->thumbnailUrl;
-                }
-            }
-
-            return !empty($url) ? $url : VideoProviders::PROVIDER_UNDEFINED;
-        }
-
-        return VideoProviders::PROVIDER_UNDEFINED;
-    }
-}
-
-class VideoProviderGuba
-{
-    const clipUidPattern = 'http:\/\/www\.guba\.com\/static\/.*bid=([^\']+)\'';
-    const thumbUrlPattern = 'http://img.guba.com/public/video/1/01/()-b.jpg';
-
-    private static function getUid( $code )
-    {
-        $pattern = self::clipUidPattern;
-
-        return preg_match("~{$pattern}~", $code, $match) ? $match[1] : null;
-    }
-
-    public static function getThumbUrl( $code )
-    {
-        if ( ($uid = self::getUid($code)) !== null )
-        {
-            $url = str_replace('()', $uid, self::thumbUrlPattern);
-
-            return strlen($url) ? $url : VideoProviders::PROVIDER_UNDEFINED;
-        }
-
-        return VideoProviders::PROVIDER_UNDEFINED;
-    }
-}
-
-class VideoProviderBigtube
-{
-    const clipUidPattern = 'http:\/\/www\.bigtube\.com\/embedplayer\/.*video_id=([^\&]+)\&';
-    const thumbUrlPattern = 'http://static.ss.bigtube.com/()/160x120_1030.jpg';
-
-    private static function getUid( $code )
-    {
-        $pattern = self::clipUidPattern;
-
-        return preg_match("~{$pattern}~", $code, $match) ? $match[1] : null;
-    }
-
-    public static function getThumbUrl( $code )
-    {
-        if ( ($uid = self::getUid($code)) !== null )
-        {
-            $url = str_replace('()', $uid, self::thumbUrlPattern);
-
-            return strlen($url) ? $url : VideoProviders::PROVIDER_UNDEFINED;
-        }
-
-        return VideoProviders::PROVIDER_UNDEFINED;
-    }
-}
-
-class VideoProviderTnaflix
-{
-    const clipUidPattern = 'embedding_feed\.php\?viewkey=([^\"]+)\"';
-    const thumbXmlPattern = 'http://www.tnaflix.com/embedding_player/embedding_feed.php?viewkey=()';
-
-    private static function getUid( $code )
-    {
-        $pattern = self::clipUidPattern;
-
-        return preg_match("~{$pattern}~", $code, $match) ? $match[1] : null;
-    }
-
-    public static function getThumbUrl( $code )
-    {
-        if ( ($uid = self::getUid($code)) !== null )
-        {
-            $xmlUrl = str_replace('()', $uid, self::thumbXmlPattern);
-
-            $fileCont = @file_get_contents($xmlUrl);
-
-            if ( strlen($fileCont) )
-            {
-                preg_match("/\<start_thumb\>(.*?)\<\/start_thumb\>/siU", $fileCont, $match);
-
-                $url = isset($match[1]) ? $match[1] : VideoProviders::PROVIDER_UNDEFINED;
-            }
-
-            return !empty($url) ? $url : VideoProviders::PROVIDER_UNDEFINED;
-        }
-
-        return VideoProviders::PROVIDER_UNDEFINED;
-    }
-}
-
 class VideoProviderXhamster
 {
-    const clipUidPattern = 'xembed\.php\?video=([^\"]+)\"';
+    const clipUidPattern = 'embed\/([^\"]+)\"';
     const thumbFeedPattern = 'http://xhamster.com/xembed.php?video=()';
+    const searchThumbPattern = 'https\:\/\/thumb-v-cl2.xhcdn.com\/[^\"]+.jpg';
 
     private static function getUid( $code )
     {
@@ -496,46 +259,10 @@ class VideoProviderXhamster
 
             if ( strlen($fileCont) )
             {
-                preg_match("/\&image=([^\&]+)\&/siU", $fileCont, $match);
+                $searchThumbPattern = self::searchThumbPattern;
+                preg_match("/{$searchThumbPattern}/", $fileCont, $match);
 
-                $url = isset($match[1]) ? urldecode($match[1]) : VideoProviders::PROVIDER_UNDEFINED;
-            }
-
-            return !empty($url) ? str_replace("b_", "", $url) : VideoProviders::PROVIDER_UNDEFINED;
-        }
-
-        return VideoProviders::PROVIDER_UNDEFINED;
-    }
-}
-
-class VideoProviderFacebook
-{
-    const clipUidPattern = 'www\.facebook\.com\/video\/embed\?video_id=([^\"]+)\"';
-    const thumbFeedPattern = 'http://graph.facebook.com/()';
-
-    private static function getUid( $code )
-    {
-        $pattern = self::clipUidPattern;
-
-        return preg_match("~{$pattern}~", $code, $match) ? $match[1] : null;
-    }
-
-    public static function getThumbUrl( $code )
-    {
-        if ( ($uid = self::getUid($code)) !== null )
-        {
-            $feedUrl = str_replace('()', $uid, self::thumbFeedPattern);
-
-            $fileCont = @file_get_contents($feedUrl);
-
-            if ( strlen($fileCont) )
-            {
-                $metaObj = @json_decode($fileCont);
-
-                if ( $metaObj )
-                {
-                    $url = @$metaObj->format[0]->picture;
-                }
+                $url = isset($match[0]) ? urldecode($match[0]) : VideoProviders::PROVIDER_UNDEFINED;
             }
 
             return !empty($url) ? $url : VideoProviders::PROVIDER_UNDEFINED;
