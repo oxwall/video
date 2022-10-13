@@ -206,20 +206,20 @@ class VIDEO_CLASS_EventHandler
         {
             $thumb = $videoService->getClipDefaultThumbUrl();
         }
-        
+
         $vars = array();
         $format = "video";
-        
+
         if ( isset($data["content"]) && is_array($data["content"]) )
         {
             $vars = empty($data["content"]["vars"]) ? array() : $data["content"]["vars"];
-            
+
             if ( !empty($data["content"]["format"]) )
             {
                 $format = $data["content"]["format"];
             }
         }
-        
+
         $content = array(
             "format" => $format,
             "vars" => array_merge(array(
@@ -258,7 +258,8 @@ class VIDEO_CLASS_EventHandler
                     'actions' => array(
                         'add' => $language->text('video', 'auth_action_label_add'),
                         'view' => $language->text('video', 'auth_action_label_view'),
-                        'add_comment' => $language->text('video', 'auth_action_label_add_comment')
+                        'add_comment' => $language->text('video', 'auth_action_label_add_comment'),
+                        'delete_comment_by_content_owner' => $language->text('video', 'auth_action_label_delete_comment_by_content_owner')
                     )
                 )
             )
@@ -476,11 +477,11 @@ class VIDEO_CLASS_EventHandler
                 $content = array(
                     "vars" => array()
                 );
-                
-                $content["vars"]["status"] = empty($params["status"]) 
+
+                $content["vars"]["status"] = empty($params["status"])
                         ? null
                         : $params["status"];
-                
+
                 $event = new OW_Event('feed.action', array(
                     'pluginKey' => 'video',
                     'entityType' => VIDEO_BOL_ClipService::ENTITY_TYPE,
@@ -491,7 +492,7 @@ class VIDEO_CLASS_EventHandler
                 ));
 
                 OW::getEventManager()->trigger($event);
-                
+
                 OW::getEventManager()->trigger(new OW_Event(VIDEO_BOL_ClipService::EVENT_AFTER_ADD, array(
                     'clipId' => $clip->id
                 )));
@@ -515,12 +516,12 @@ class VIDEO_CLASS_EventHandler
     public function feedBeforeStatusUpdate( OW_Event $e )
     {
         $params = $e->getParams();
-        
+
         if ( $params['type'] != 'video' )
         {
             return;
         }
-        
+
         $auth = BOL_AuthorizationService::getInstance()->getActionStatus('video', 'add');
 
         if ( $auth['status'] != BOL_AuthorizationService::STATUS_AVAILABLE)
@@ -548,10 +549,10 @@ class VIDEO_CLASS_EventHandler
             $e->setData(array(
                 "message" => OW::getLanguage()->text("video", "pending_approval_feedback")
             ));
-            
+
             return;
         }
-        
+
         if ( !empty($addClipData['id']) )
         {
             $e->setData(array('entityType' => 'video_comments', 'entityId' => $addClipData['id']));
@@ -722,7 +723,7 @@ class VIDEO_CLASS_EventHandler
                 "vars" => array("user_name", "user_gender", "user_age", "user_location", "site_name")
             )
         );
-        
+
         foreach ($items as &$item)
         {
             $item["sectionLabel"] = $language->text("video", "seo_meta_section");
